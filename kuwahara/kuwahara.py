@@ -1,5 +1,3 @@
-import cv2
-import numpy as np
 from image_base import ImageBase
 
 image = ImageBase(
@@ -7,4 +5,4 @@ image = ImageBase(
     image_mode="greyscale"
 )
 
-image._show_image()
+
