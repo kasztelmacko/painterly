@@ -24,6 +24,7 @@ class ImageBase:
             raise ValueError("Invalid image mode. Choose from 'greyscale', 'RGB', 'BGR'.")
 
         self.image_shape = self.image.shape
+        self.details = self._print_image_details()
 
     def _show_image(self, image_array: np.array = None, image_name: str = None, window_size: tuple = None, window_position: tuple = None):
         if image_array is None:
@@ -73,5 +74,13 @@ class ImageBase:
         print(f"Image Name: {self.image_name}")
         print(f"Image Path: {self.image_path}")
         print(f"Image Mode: {self.image_mode}")
-        print(f"Image Color Mode: {self.image_color_mode}")
         print(f"Image Shape: {self.image_shape}")
+
+        details = {
+            "Image Name": self.image_name,
+            "Image Path": self.image_path,
+            "Image Mode": self.image_mode,
+            "Image Shape": self.image_shape
+        }
+
+        return details
