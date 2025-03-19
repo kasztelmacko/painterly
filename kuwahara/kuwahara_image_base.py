@@ -5,7 +5,7 @@ from image_base import ImageBase
 from typing import Union
 
 class KuwaharaFilterImage(ImageBase):
-    def __init__(self, image_name: str, image_mode: str,kernel_size: int = 5, n_subregions: int = 4):
+    def __init__(self, image_name: str, image_mode: str, kernel_size: int = 5, n_subregions: int = 4):
         super().__init__(
             image_name=image_name,
             image_mode=image_mode
@@ -25,6 +25,8 @@ class KuwaharaFilterImage(ImageBase):
             image_array = np.pad(image_array, self.padding, mode='constant')
         else:
             raise ValueError("pad_type must be either 'mirror' or 'zero'")
+        
+        print("Padded image shape")
         return image_array
 
     def precompute_variance_lookup(self, padded_image: np.array = None):
@@ -32,12 +34,24 @@ class KuwaharaFilterImage(ImageBase):
             padded_image = self.padded_image
 
         height, width = padded_image.shape[:2]
-        variance_lookup = np.zeros((height, width))
+        variance_lookup = {
+            "top_left": np.zeros((height, width)),
+            "top_right": np.zeros((height, width)),
+            "bottom_left": np.zeros((height, width)),
+            "bottom_right": np.zeros((height, width))
+        }
 
-        for y in range(height):
-            for x in range(width):
-                subregion = padded_image[y:y+self.kernel_size, x:x+self.kernel_size]
-                variance_lookup[y, x] = np.var(subregion)
+        for y in range(self.padding, height - self.padding):
+            for x in range(self.padding, width - self.padding):
+                neighborhood = padded_image[
+                    y - self.padding : y + self.padding + 1,
+                    x - self.padding : x + self.padding + 1
+                ]
+                quadrants = self.get_quadrants(neighborhood)
+                for quadrant_name, quadrant in quadrants.items():
+                    variance_lookup[quadrant_name][y, x] = np.var(quadrant)
+
+        print("Variance lookup table")
         return variance_lookup
     
     def apply_kuwahara_filter(self, image_array: np.array = None, padded_image: np.array = None):
@@ -47,12 +61,26 @@ class KuwaharaFilterImage(ImageBase):
             padded_image = self.padded_image
         
         height, width = image_array.shape[:2]
+        filtered_image = np.zeros_like(image_array)
 
-        for y in range(height - self.padding - 1):
-            for x in range(width - self.padding - 1):
-                neighborhood = self.get_neighbors(x, y, padded_image)
+        for y in range(height - self.padding):
+            for x in range(width - self.padding):
+                neighborhood = self.get_neighbors(x, y)
+                quadrants = self.get_quadrants(neighborhood)
+                best_mean = None
+                smallest_variance = float('inf')
+                for quadrant_name, quadrant in quadrants.items():
+                    mean = np.mean(quadrant)
+                    variance = self.variance_lookup[quadrant_name][y, x]
+                    if variance < smallest_variance:
+                        smallest_variance = variance
+                        best_mean = mean
+                filtered_image[y, x] = best_mean
 
-    def get_neighbors(self, x: int, y: int, value: Union[int, tuple], padded_image: np.array = None):
+        return filtered_image
+
+
+    def get_neighbors(self, x: int, y: int, padded_image: np.array = None):
         if padded_image is None:
             padded_image = self.padded_image
 
@@ -62,6 +90,18 @@ class KuwaharaFilterImage(ImageBase):
         ]
 
         return neighborhood
+    
+    def get_quadrants(self, neighborhood: np.array):
+        center = self.padding
+        quadrants = {
+            "top_left": neighborhood[:center + 1, :center + 1],
+            "top_right": neighborhood[:center + 1, center:],
+            "bottom_left": neighborhood[center:, :center +1 ],
+            "bottom_right": neighborhood[center:, center:]
+        }
+
+        return quadrants
+            
         
 
 

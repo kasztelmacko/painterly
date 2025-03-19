@@ -6,6 +6,7 @@ class ImageBase:
     def __init__(self, image_name, image_mode="BGR"):
         self.image_name = image_name
         self.image_path = config["images_path"] + image_name
+        self.image_output_path = config["images_output_path"] + image_name
         self.image_mode = image_mode
         self.image_extension = image_name.split('.')[-1]
 
@@ -44,7 +45,7 @@ class ImageBase:
         if image_array is None:
             image_array = self.image
         if image_name is None:
-            image_name = self.image_name
+            image_name = self.image_output_path
         cv2.imwrite(image_name, image_array)
 
     def _validate_image_extension(self):

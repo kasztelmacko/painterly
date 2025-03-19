@@ -1,3 +1,4 @@
-from kuwahara.kuwahara import image
+from kuwahara.kuwahara import filtered_image
 
-image._show_image(window_size=(600, 800))
+
+filtered_image._save_image(window_size=(600, 800))
