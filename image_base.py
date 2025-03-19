@@ -73,12 +73,14 @@ class ImageBase:
     def _print_image_details(self):
         print(f"Image Name: {self.image_name}")
         print(f"Image Path: {self.image_path}")
+        print(f"Image Output Path: {self.image_output_path}")
         print(f"Image Mode: {self.image_mode}")
         print(f"Image Shape: {self.image_shape}")
 
         details = {
             "Image Name": self.image_name,
             "Image Path": self.image_path,
+            "Image Output Path": self.image_output_path,
             "Image Mode": self.image_mode,
             "Image Shape": self.image_shape
         }

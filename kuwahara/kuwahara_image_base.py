@@ -69,12 +69,19 @@ class KuwaharaFilterImage(ImageBase):
                 quadrants = self.get_quadrants(neighborhood)
                 best_mean = None
                 smallest_variance = float('inf')
+                
                 for quadrant_name, quadrant in quadrants.items():
                     mean = np.mean(quadrant)
                     variance = self.variance_lookup[quadrant_name][y, x]
-                    if variance < smallest_variance:
-                        smallest_variance = variance
-                        best_mean = mean
+
+                    if not np.isnan(mean) and not np.isinf(mean) and not np.isnan(variance) and not np.isinf(variance):
+                        if variance < smallest_variance:
+                            smallest_variance = variance
+                            best_mean = mean
+
+                if best_mean is None:
+                    best_mean = image_array[y, x]
+
                 filtered_image[y, x] = best_mean
 
         return filtered_image
