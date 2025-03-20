@@ -33,23 +33,25 @@ class KuwaharaFilterImage(ImageBase):
         if padded_image is None:
             padded_image = self.padded_image
 
-        height, width = padded_image.shape[:2]
+        height, width, channels = padded_image.shape
         variance_lookup = {
-            "top_left": np.zeros((height, width)),
-            "top_right": np.zeros((height, width)),
-            "bottom_left": np.zeros((height, width)),
-            "bottom_right": np.zeros((height, width))
+            "top_left": np.zeros((height, width, channels)),
+            "top_right": np.zeros((height, width, channels)),
+            "bottom_left": np.zeros((height, width, channels)),
+            "bottom_right": np.zeros((height, width, channels))
         }
 
         for y in range(self.padding, height - self.padding):
             for x in range(self.padding, width - self.padding):
-                neighborhood = padded_image[
-                    y - self.padding : y + self.padding + 1,
-                    x - self.padding : x + self.padding + 1
-                ]
-                quadrants = self.get_quadrants(neighborhood)
-                for quadrant_name, quadrant in quadrants.items():
-                    variance_lookup[quadrant_name][y, x] = np.var(quadrant)
+                for c in range(channels):
+                    neighborhood = padded_image[
+                        y - self.padding : y + self.padding + 1,
+                        x - self.padding : x + self.padding + 1,
+                        c
+                    ]
+                    quadrants = self.get_quadrants(neighborhood)
+                    for quadrant_name, quadrant in quadrants.items():
+                        variance_lookup[quadrant_name][y, x, c] = np.var(quadrant)
 
         print("Variance lookup table")
         return variance_lookup
@@ -60,31 +62,32 @@ class KuwaharaFilterImage(ImageBase):
         if padded_image is None:
             padded_image = self.padded_image
         
-        height, width = image_array.shape[:2]
+        height, width, channels = image_array.shape
         filtered_image = np.zeros_like(image_array)
 
         for y in range(height - self.padding):
             for x in range(width - self.padding):
-                neighborhood = self.get_neighbors(x, y)
-                quadrants = self.get_quadrants(neighborhood)
-                best_mean = None
-                smallest_variance = float('inf')
-                
-                for quadrant_name, quadrant in quadrants.items():
-                    mean = np.mean(quadrant)
-                    variance = self.variance_lookup[quadrant_name][y, x]
+                for c in range(channels):
+                    neighborhood = self.get_neighbors(x, y, padded_image[:, :, c])
+                    quadrants = self.get_quadrants(neighborhood)
+                    best_mean = None
+                    smallest_variance = float('inf')
+                    
+                    for quadrant_name, quadrant in quadrants.items():
+                        mean = np.mean(quadrant)
+                        variance = self.variance_lookup[quadrant_name][y, x, c]
 
-                    if not np.isnan(mean) and not np.isinf(mean) and not np.isnan(variance) and not np.isinf(variance):
                         if variance < smallest_variance:
                             smallest_variance = variance
                             best_mean = mean
 
-                if best_mean is None:
-                    best_mean = image_array[y, x]
+                    if best_mean is None:
+                        best_mean = image_array[y, x, c]
 
-                filtered_image[y, x] = best_mean
+                    filtered_image[y, x, c] = best_mean
 
-        return filtered_image
+        filtered_image_rgb = filtered_image[:, :, ::-1]
+        return filtered_image_rgb
 
 
     def get_neighbors(self, x: int, y: int, padded_image: np.array = None):
@@ -92,8 +95,8 @@ class KuwaharaFilterImage(ImageBase):
             padded_image = self.padded_image
 
         neighborhood = padded_image[
-            x - self.padding : x + self.padding + 1,
-            y - self.padding : y + self.padding + 1
+            y - self.padding : y + self.padding + 1,
+            x - self.padding : x + self.padding + 1
         ]
 
         return neighborhood
