@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.signal import convolve2d
 from scipy.ndimage import gaussian_filter
-from image_base import ImageBase
+from image_base.image_base import ImageBase
 
 class AnisotropicKuwaharaImage(ImageBase):
     def __init__(self, image_name: str, image_mode: str, kernel_size: int = 5, alpha: float = 1.0, sharpness: float = 4.0):

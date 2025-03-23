@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.signal import convolve2d
-from image_base import ImageBase
+from image_base.image_base import ImageBase
 
 class KuwaharaFilterImage(ImageBase):
     def __init__(self, image_name: str, image_mode: str, kernel_size: int = 5):
