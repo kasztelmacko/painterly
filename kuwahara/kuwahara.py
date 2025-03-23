@@ -1,8 +1,8 @@
 from kuwahara.kuwahara_image_base import KuwaharaFilterImage
 
 image = KuwaharaFilterImage(
-    image_name="marti_test.jpg",
+    image_name="Lenna.png",
     image_mode="BGR",
-    kernel_size=9,
+    kernel_size=13,
 )
 

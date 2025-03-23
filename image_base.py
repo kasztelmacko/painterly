@@ -10,6 +10,7 @@ class ImageBase:
         self.image_mode = image_mode
         self.image_extension = image_name.split('.')[-1]
 
+        # Load the image based on the specified mode
         if image_mode == "greyscale":
             self.image = cv2.imread(self.image_path, cv2.IMREAD_GRAYSCALE)
             self.image_color_mode = "greyscale"
@@ -23,8 +24,23 @@ class ImageBase:
         else:
             raise ValueError("Invalid image mode. Choose from 'greyscale', 'RGB', 'BGR'.")
 
+        self.image = self._resize_image_if_large(self.image)
+
         self.image_shape = self.image.shape
         self.details = self._print_image_details()
+
+    def _resize_image_if_large(self, image_array: np.array, max_width: int = config["max_image_width"]):
+        """
+        Resize the image if its width exceeds the specified maximum width.
+        The aspect ratio is maintained.
+        """
+        height, width = image_array.shape[:2]
+        if width > max_width:
+            new_width = max_width
+            new_height = int((height / width) * new_width)
+            image_array = cv2.resize(image_array, (new_width, new_height), interpolation=cv2.INTER_AREA)
+            print(f"Image resized to {new_width}x{new_height} (original: {width}x{height})")
+        return image_array
 
     def _show_image(self, image_array: np.array = None, image_name: str = None, window_size: tuple = None, window_position: tuple = None):
         if image_array is None:
