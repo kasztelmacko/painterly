@@ -3,13 +3,12 @@ from scipy.signal import convolve2d
 from image_base import ImageBase
 
 class KuwaharaFilterImage(ImageBase):
-    def __init__(self, image_name: str, image_mode: str, kernel_size: int = 5, n_subregions: int = 4):
+    def __init__(self, image_name: str, image_mode: str, kernel_size: int = 5):
         super().__init__(
             image_name=image_name,
             image_mode=image_mode
         )
         self.kernel_size = kernel_size
-        self.n_subregions = n_subregions
         self.padding = (kernel_size - 1) // 2
         self.padded_image = self.pad_image()
         
@@ -23,7 +22,6 @@ class KuwaharaFilterImage(ImageBase):
         else:
             raise ValueError("pad_type must be either 'mirror' or 'zero'")
         
-        print("Padded image shape:", image_array.shape)
         return image_array
 
     def apply_kuwahara_filter(self, image_array: np.array = None):
@@ -56,10 +54,10 @@ class KuwaharaFilterImage(ImageBase):
         tmpavgker = tmpavgker / np.sum(tmpavgker)
 
         avgker = np.empty((4, kernel_size, kernel_size)) 
-        avgker[0] = tmpavgker			    # North-west (a)
-        avgker[1] = np.fliplr(tmpavgker)	# North-east (b)
-        avgker[2] = np.flipud(tmpavgker)	# South-west (c)
-        avgker[3] = np.fliplr(avgker[2])	# South-east (d)
+        avgker[0] = tmpavgker			    # top-left (a)
+        avgker[1] = np.fliplr(tmpavgker)	# top-right (b)
+        avgker[2] = np.flipud(tmpavgker)	# bottom-left (c)
+        avgker[3] = np.fliplr(avgker[2])	# bottom-right (d)
         
         squaredImg = image**2
         
@@ -79,3 +77,6 @@ class KuwaharaFilterImage(ImageBase):
                 filtered[row, col] = avgs[indices[row, col], row, col]
 
         return filtered.astype(np.uint8)
+    
+    def save_filtered_image(self, filtered_image):
+        self._save_image("kuwahara", image_array=filtered_image)

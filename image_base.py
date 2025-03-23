@@ -10,7 +10,6 @@ class ImageBase:
         self.image_mode = image_mode
         self.image_extension = image_name.split('.')[-1]
 
-        # Load the image based on the specified mode
         if image_mode == "greyscale":
             self.image = cv2.imread(self.image_path, cv2.IMREAD_GRAYSCALE)
             self.image_color_mode = "greyscale"
@@ -27,7 +26,6 @@ class ImageBase:
         self.image = self._resize_image_if_large(self.image)
 
         self.image_shape = self.image.shape
-        self.details = self._print_image_details()
 
     def _resize_image_if_large(self, image_array: np.array, max_width: int = config["max_image_width"]):
         """
@@ -58,12 +56,13 @@ class ImageBase:
         cv2.waitKey(0)
         cv2.destroyAllWindows()
     
-    def _save_image(self, image_array: np.array = None, image_name: str = None):
+    def _save_image(self, filter_name, image_array: np.array = None, image_name: str = None):
         if image_array is None:
             image_array = self.image
         if image_name is None:
             image_name = self.image_output_path
-        cv2.imwrite(image_name, image_array)
+        output_name = f"{image_name.split('.')[0]}_{filter_name}.{self.image_extension}"
+        cv2.imwrite(output_name, image_array)
 
     def _validate_image_extension(self):
         if self.image_extension not in config["valid_image_extensions"]:
@@ -85,20 +84,3 @@ class ImageBase:
         new_height = int(height * resizer)
 
         return cv2.resize(image_array, (new_width, new_height), interpolation=cv2.INTER_AREA)
-    
-    def _print_image_details(self):
-        print(f"Image Name: {self.image_name}")
-        print(f"Image Path: {self.image_path}")
-        print(f"Image Output Path: {self.image_output_path}")
-        print(f"Image Mode: {self.image_mode}")
-        print(f"Image Shape: {self.image_shape}")
-
-        details = {
-            "Image Name": self.image_name,
-            "Image Path": self.image_path,
-            "Image Output Path": self.image_output_path,
-            "Image Mode": self.image_mode,
-            "Image Shape": self.image_shape
-        }
-
-        return details
