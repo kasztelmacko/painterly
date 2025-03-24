@@ -12,7 +12,7 @@ def main(filter_type, image_name, image_mode, kernel_size, n_clusters=None, alph
         filtered_image = image.apply_anisotropic_kuwahara_filter()
         image.save_filtered_image(filtered_image)
     elif filter_type == "kmeans":
-        image = create_kmeans_image(image_name, image_mode, n_clusters=15)
+        image = create_kmeans_image(image_name, image_mode, n_clusters)
         filtered_image = image.apply_kmeans_filter()
         image.save_filtered_image(filtered_image)
     else:
@@ -21,11 +21,17 @@ def main(filter_type, image_name, image_mode, kernel_size, n_clusters=None, alph
 
 if __name__ == "__main__":
     filter_type = "kmeans"
-    image_name = "Lenna.png"
+    image_name = "marti_test.jpg"
     image_mode = "BGR"
     kernel_size = 13 if filter_type != "kmeans" else None
-    n_clusters = 2 if filter_type == "kmeans" else None
+    n_clusters = 13 if filter_type == "kmeans" else None
     alpha = 1.0 if filter_type == "anisotropic_kuwahara" else None
-    sharpness = 4.0 if filter_type == "anisotropic_kuwahara" else None
+    sharpness = 2.0 if filter_type == "anisotropic_kuwahara" else None
 
-    main(filter_type, image_name, image_mode, kernel_size, alpha, sharpness, n_clusters)
+    main(filter_type = filter_type, 
+         image_name = image_name, 
+         image_mode = image_mode, 
+         kernel_size = kernel_size, 
+         n_clusters = n_clusters, 
+         alpha = alpha, 
+         sharpness = sharpness)
